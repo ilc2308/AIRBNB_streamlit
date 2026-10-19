@@ -110,7 +110,7 @@ Usamos el conjunto **New York City Airbnb Open Data (2019)**, publicado en Kaggl
 
 ## Autores
 
-Proyecto desarrollado para el curso de Ciencia de Datos.
+Proyecto desarrollado para el curso de Minería de Datos.
 
-- *[Nombre del integrante]*
+- *Ismael López Cardozo*
 - *[Nombre del integrante]*
