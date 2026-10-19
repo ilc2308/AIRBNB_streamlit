@@ -4,7 +4,7 @@ Si alguna vez has pensado en publicar un apartamento en Airbnb, seguramente te h
 
 Este proyecto intenta responder esa pregunta con datos. Entrenamos un modelo de aprendizaje automático con cerca de 49 000 anuncios reales de Airbnb en Nueva York (2019). A partir de la ubicación, el tipo de alojamiento y algunos datos del anuncio, el modelo estima un **precio de referencia por noche**.
 
-👉 **Pruébalo aquí:** [enlace a la aplicación en Streamlit Cloud](#) <!-- reemplazar por el enlace real -->
+👉 **Pruébalo aquí:** https://airbnbapp-lgrhe3dn5q3h297bcrw4oa.streamlit.app/
 
 ---
 
