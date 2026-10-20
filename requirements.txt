@@ -1,8 +1,8 @@
 streamlit
-scikit-learn==1.6.1
-xgboost==3.4.1
-pandas
-numpy
-joblib
 streamlit-folium
 folium
+joblib
+pandas
+numpy
+scikit-learn==1.6.1
+xgboost==3.4.1
