@@ -14,7 +14,14 @@ def cargar_modelo():
     return joblib.load('modelo_final_airbnb.pkl')
 
 
+# Coordenadas y distrito de los alojamientos del dataset (para saber el distrito del punto marcado)
+@st.cache_data
+def cargar_ubicaciones():
+    return pd.read_csv('ubicaciones_distritos.csv')
+
+
 modelo = cargar_modelo()
+ubicaciones = cargar_ubicaciones()
 
 # ---------------- Ubicación: se elige con un clic en el mapa
 st.header('Ubicación')
@@ -42,7 +49,10 @@ fuera_de_nyc = not (40.49 <= latitud <= 40.92 and -74.26 <= longitud <= -73.70)
 if fuera_de_nyc:
     st.warning('La ubicación está fuera de la ciudad de Nueva York. Selecciona un punto dentro de la ciudad.')
 
-distrito = st.selectbox('Distrito', ['Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'])
+# El distrito es el del alojamiento del dataset más cercano al punto marcado
+distancias = (ubicaciones['latitude'] - latitud) ** 2 + (ubicaciones['longitude'] - longitud) ** 2
+distrito = ubicaciones.loc[distancias.idxmin(), 'neighbourhood_group']
+st.info(f'Distrito: {distrito}')
 
 # ---------------- Alojamiento y anfitrión
 st.header('Alojamiento y anfitrión')
