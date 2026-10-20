@@ -4,7 +4,7 @@ Si alguna vez has pensado en publicar un apartamento en Airbnb, seguramente te h
 
 Este proyecto intenta responder esa pregunta con datos. Entrenamos un modelo de aprendizaje automático con cerca de 49 000 anuncios reales de Airbnb en Nueva York (2019). A partir de la ubicación, el tipo de alojamiento y algunos datos del anuncio, el modelo estima un **precio de referencia por noche**.
 
-👉 **Pruébalo aquí:** https://airbnbapp-c8wca8smbq7ohcvhcgitgh.streamlit.app/
+👉 **Pruébalo aquí:** [enlace a la aplicación en Streamlit Cloud](#) <!-- reemplazar por el enlace real -->
 
 ---
 
@@ -12,7 +12,7 @@ Este proyecto intenta responder esa pregunta con datos. Entrenamos un modelo de 
 
 Ingresas los datos del alojamiento:
 
-- el distrito y la ubicación (latitud y longitud),
+- la ubicación, marcándola con un clic en el mapa (el distrito se detecta automáticamente),
 - el tipo de alojamiento: casa o apartamento entero, habitación privada o habitación compartida,
 - las noches mínimas de estadía y los días disponibles al año,
 - el número de reseñas, las reseñas por mes y cuántos anuncios tiene el anfitrión.
@@ -74,7 +74,8 @@ Tómalo como lo que es: **una referencia razonable para empezar**, no un precio 
 | `app.py` | La aplicación de Streamlit |
 | `features.py` | Funciones de preparación de datos y de creación de variables (el modelo las necesita para funcionar) |
 | `modelo_final_airbnb.pkl` | El modelo entrenado: pipeline con la preparación de datos y XGBoost |
-| `requirements.txt` | Librerías necesarias, con las mismas versiones con las que se entrenó el modelo |
+| `ubicaciones_distritos.csv` | Coordenadas y distrito de los alojamientos del dataset; la app lo usa para saber en qué distrito está el punto que marcas en el mapa |
+| `requirements.txt` | Librerías necesarias; scikit-learn y XGBoost llevan las mismas versiones con las que se entrenó el modelo |
 
 El análisis completo está en tres notebooks de Google Colab y en el documento de la metodología CRISP-DM:
 
@@ -98,7 +99,7 @@ streamlit run app.py
 
 La aplicación se abrirá en tu navegador, en `http://localhost:8501`.
 
-> **Importante:** `app.py`, `features.py` y `modelo_final_airbnb.pkl` deben estar en la misma carpeta. Además, usa las versiones de `requirements.txt`: con otra versión de scikit-learn o XGBoost, el modelo podría no cargarse.
+> **Importante:** `app.py`, `features.py`, `modelo_final_airbnb.pkl` y `ubicaciones_distritos.csv` deben estar en la misma carpeta. Además, usa las versiones de scikit-learn y XGBoost de `requirements.txt` y la misma versión de Python con la que se entrenó el modelo: con otras versiones, el modelo podría no cargarse.
 
 ---
 
@@ -110,7 +111,7 @@ Usamos el conjunto **New York City Airbnb Open Data (2019)**, publicado en Kaggl
 
 ## Autores
 
-Proyecto desarrollado para el curso de Minería de Datos.
+Proyecto desarrollado para el curso de Ciencia de Datos.
 
-- *Ismael López Cardozo*
+- *[Nombre del integrante]*
 - *[Nombre del integrante]*
