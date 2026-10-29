@@ -218,3 +218,7 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Scratch & Generated Mined Data
+scratch/
+data/*_minado.csv
