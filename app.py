@@ -1,8 +1,45 @@
+import os
+import sys
 import joblib
 import pandas as pd
+import numpy as np
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
+
+# Compatibilidad multiplataforma (Linux -> Windows) para deserialización de XGBoost
+if sys.platform == 'win32':
+    try:
+        import xgboost.core
+        orig_setstate = xgboost.core.Booster.__setstate__
+
+        def _win_setstate(self, state):
+            buf = state.get("handle")
+            if buf is not None and isinstance(buf, (bytearray, bytes)):
+                b = bytes(buf)
+                marker = b'rng_stateSL'
+                idx = b.find(marker)
+                if idx != -1:
+                    str_len = int.from_bytes(b[idx + len(marker):idx + len(marker) + 8], 'big')
+                    str_start = idx + len(marker) + 8
+                    old_str = b[str_start:str_start + str_len].decode('latin1')
+                    parts = old_str.strip().split()
+                    if len(parts) >= 624 and all(p.isdigit() for p in parts[:10]):
+                        import xgboost as xgb
+                        reg = xgb.XGBRegressor(n_estimators=1, random_state=42)
+                        reg.fit(np.array([[1], [2]]), np.array([1, 2]))
+                        win_buf = bytes(reg.get_booster().__getstate__()['handle'])
+                        win_idx = win_buf.find(marker)
+                        win_len = int.from_bytes(win_buf[win_idx + len(marker):win_idx + len(marker) + 8], 'big')
+                        win_str_start = win_idx + len(marker) + 8
+                        win_str_bytes = win_buf[win_str_start:win_str_start + win_len]
+                        new_buf = b[:idx + len(marker)] + win_len.to_bytes(8, 'big') + win_str_bytes + b[str_start + str_len:]
+                        state["handle"] = bytearray(new_buf)
+            return orig_setstate(self, state)
+
+        xgboost.core.Booster.__setstate__ = _win_setstate
+    except Exception:
+        pass
 
 st.title('Predicción del precio de Airbnb en Nueva York')
 st.write('Ingresa las características del alojamiento para estimar su precio por noche (datos de 2019).')
@@ -11,13 +48,15 @@ st.write('Ingresa las características del alojamiento para estimar su precio po
 # Cargar el modelo una sola vez (el caché evita recargarlo en cada clic)
 @st.cache_resource
 def cargar_modelo():
-    return joblib.load('modelo_final_airbnb.pkl')
+    ruta = 'models/modelo_final_airbnb.pkl' if os.path.exists('models/modelo_final_airbnb.pkl') else 'modelo_final_airbnb.pkl'
+    return joblib.load(ruta)
 
 
 # Coordenadas y distrito de los alojamientos del dataset (para saber el distrito del punto marcado)
 @st.cache_data
 def cargar_ubicaciones():
-    return pd.read_csv('ubicaciones_distritos.csv')
+    ruta = 'data/ubicaciones_distritos.csv' if os.path.exists('data/ubicaciones_distritos.csv') else 'ubicaciones_distritos.csv'
+    return pd.read_csv(ruta)
 
 
 modelo = cargar_modelo()

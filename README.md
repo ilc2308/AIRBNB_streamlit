@@ -67,39 +67,73 @@ Tómalo como lo que es: **una referencia razonable para empezar**, no un precio 
 
 ---
 
-## Archivos del repositorio
+## Estructura del repositorio
 
-| Archivo | Para qué sirve |
-|---|---|
-| `app.py` | La aplicación de Streamlit |
-| `features.py` | Funciones de preparación de datos y de creación de variables (el modelo las necesita para funcionar) |
-| `modelo_final_airbnb.pkl` | El modelo entrenado: pipeline con la preparación de datos y XGBoost |
-| `ubicaciones_distritos.csv` | Coordenadas y distrito de los alojamientos del dataset; la app lo usa para saber en qué distrito está el punto que marcas en el mapa |
-| `requirements.txt` | Librerías necesarias; scikit-learn y XGBoost llevan las mismas versiones con las que se entrenó el modelo |
+El repositorio está organizado de forma modular para separar datos, experimentación, modelo y despliegue:
 
-El análisis completo está en tres notebooks de Google Colab y en el documento de la metodología CRISP-DM:
-
-- `PreparaciondeDatosAIRBNB.ipynb`: limpieza y preparación de los datos
-- `Modelo_Airbnb_NYC.ipynb`: ingeniería de características, modelos, evaluación y pipeline final
-- `Despliegue_Airbnb_NYC.ipynb`: preparación de los archivos para la aplicación
-- `METODOLOGIA_CRISP_DM_Airbnb_NYC.docx`: documentación de todo el proceso
+```text
+AIRBNB_streamlit/
+├── app.py                     # Aplicación web interactiva en Streamlit
+├── features.py                # Transformaciones e ingeniería de características en producción
+├── requirements.txt           # Dependencias para producción y despliegue
+├── data/
+│   ├── AB_NYC_2019.csv        # Dataset original de Airbnb NYC 2019
+│   ├── Airbnb_NYC_2019_limpio.csv # Dataset con reglas de calidad aplicadas
+│   └── ubicaciones_distritos.csv  # Coordenadas de referencia para inferir distritos
+├── models/
+│   └── modelo_final_airbnb.pkl    # Pipeline serializado (preprocesamiento + XGBoost)
+├── notebooks/
+│   ├── PreparaciondeDatosAIRBNB.ipynb # Fase 2 y 3 CRISP-DM: Limpieza y EDA
+│   ├── Modelo_Airbnb_NYC.ipynb        # Fase 4 y 5 CRISP-DM: Modelado, ANOVA, Optuna
+│   └── Despliegue_Airbnb_NYC.ipynb    # Fase 6 CRISP-DM: Preparación para producción
+├── docs/
+│   ├── METODOLOGIA_CRISP_DM_Airbnb_NYC.pdf # Documento formal de la metodología CRISP-DM
+│   └── output.html            # Reporte exploratorio automatizado (YData Profiling)
+├── tests/
+│   ├── test_features.py       # Pruebas unitarias de transformaciones
+│   └── test_model.py          # Pruebas de carga e inferencia del modelo
+└── .github/
+    └── workflows/
+        └── ci.yml             # Integración continua (CI) con GitHub Actions
+```
 
 ---
 
 ## Ejecutarlo en tu computador
 
-Necesitas Python 3 instalado.
+Necesitas Python 3.12 instalado.
 
-```bash
-git clone <url-de-este-repositorio>
-cd <nombre-del-repositorio>
-pip install -r requirements.txt
-streamlit run app.py
-```
+1. **Clonar el repositorio:**
+   ```bash
+   git clone <url-de-este-repositorio>
+   cd <nombre-del-repositorio>
+   ```
 
-La aplicación se abrirá en tu navegador, en `http://localhost:8501`.
+2. **Crear y activar un entorno virtual (recomendado):**
+   ```bash
+   python -m venv .venv
+   # En Windows:
+   .venv\Scripts\activate
+   # En Linux / Mac:
+   source .venv/bin/activate
+   ```
 
-> **Importante:** `app.py`, `features.py`, `modelo_final_airbnb.pkl` y `ubicaciones_distritos.csv` deben estar en la misma carpeta. Además, usa las versiones de scikit-learn y XGBoost de `requirements.txt` y la misma versión de Python con la que se entrenó el modelo: con otras versiones, el modelo podría no cargarse.
+3. **Instalar dependencias:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Ejecutar las pruebas unitarias:**
+   ```bash
+   pytest tests/
+   ```
+
+5. **Iniciar la aplicación:**
+   ```bash
+   streamlit run app.py
+   ```
+
+La aplicación se abrirá en tu navegador en `http://localhost:8501`.
 
 ---
 
