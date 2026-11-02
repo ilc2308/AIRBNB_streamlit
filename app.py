@@ -1,5 +1,6 @@
 import os
 import sys
+import math
 import joblib
 import pandas as pd
 import numpy as np
@@ -41,30 +42,49 @@ if sys.platform == 'win32':
     except Exception:
         pass
 
+# Importar utilidades de features para consistencia con el pipeline
+try:
+    from features import haversine_vec, PALABRAS_LUJO, PALABRAS_PRESUPUESTO, PALABRAS_TRANSPORTE
+except Exception:
+    def haversine_vec(lat1, lon1, lat2, lon2):
+        lat1, lon1, lat2, lon2 = map(np.radians, [lat1, lon1, lat2, lon2])
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        a = np.sin(dlat / 2.0) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2.0) ** 2
+        return 6371.0 * 2.0 * np.arcsin(np.sqrt(a))
+
+    PALABRAS_LUJO = ['luxury', 'lux', 'penthouse', 'exclusive', 'stunning', 'spectacular', 'skyline', 'terrace', 'balcony', 'duplex', 'pool', 'high-end', 'gorgeous', 'views', 'view']
+    PALABRAS_PRESUPUESTO = ['cheap', 'budget', 'cozy', 'small', 'simple', 'tiny', 'economical', 'basic']
+    PALABRAS_TRANSPORTE = ['subway', 'train', 'metro', 'station', 'steps to', 'min to', 'minutes to', 'walk to']
+
+st.set_page_config(page_title="Predicción de precio Airbnb NYC", page_icon="🏠", layout="wide")
 st.title('Predicción del precio de Airbnb en Nueva York')
-st.write('Ingresa las características del alojamiento para estimar su precio por noche (datos de 2019).')
+st.write('Estimación con modelo enriquecido: geolocalización con múltiples POIs, micro-barrio (Target Encoding), análisis semántico del título y ratios de negocio.')
 
 
-# Cargar el modelo una sola vez (el caché evita recargarlo en cada clic)
+# Cargar el modelo una sola vez
 @st.cache_resource
 def cargar_modelo():
     ruta = 'models/modelo_final_airbnb.pkl' if os.path.exists('models/modelo_final_airbnb.pkl') else 'modelo_final_airbnb.pkl'
     return joblib.load(ruta)
 
 
-# Coordenadas y distrito de los alojamientos del dataset (para saber el distrito del punto marcado)
+# Coordenadas y distrito/barrio de los alojamientos del dataset
 @st.cache_data
 def cargar_ubicaciones():
     ruta = 'data/ubicaciones_distritos.csv' if os.path.exists('data/ubicaciones_distritos.csv') else 'ubicaciones_distritos.csv'
-    return pd.read_csv(ruta)
+    df = pd.read_csv(ruta)
+    if 'neighbourhood' not in df.columns:
+        df['neighbourhood'] = 'Unknown'
+    return df
 
 
 modelo = cargar_modelo()
 ubicaciones = cargar_ubicaciones()
 
 # ---------------- Ubicación: se elige con un clic en el mapa
-st.header('Ubicación')
-st.write('Haz clic en el mapa para marcar dónde está el alojamiento.')
+st.header('1) Ubicación')
+st.write('Haz clic en el mapa para marcar dónde está el alojamiento. El modelo utiliza el **micro-barrio** y las **distancias a POIs** para refinar la predicción.')
 
 # Ubicación inicial: Times Square
 if 'ubicacion' not in st.session_state:
@@ -74,7 +94,6 @@ mapa = folium.Map(location=st.session_state['ubicacion'], zoom_start=12)
 folium.Marker(st.session_state['ubicacion'], tooltip='Alojamiento').add_to(mapa)
 clic = st_folium(mapa, height=450, use_container_width=True, returned_objects=['last_clicked'])
 
-# Si el usuario hizo clic en un punto nuevo, se guarda y se vuelve a dibujar el mapa con el marcador
 if clic and clic['last_clicked']:
     nueva = [clic['last_clicked']['lat'], clic['last_clicked']['lng']]
     if nueva != st.session_state['ubicacion']:
@@ -82,29 +101,54 @@ if clic and clic['last_clicked']:
         st.rerun()
 
 latitud, longitud = st.session_state['ubicacion']
-st.write(f'Ubicación seleccionada: latitud {latitud:.4f}, longitud {longitud:.4f}')
+col1, col2 = st.columns(2)
+with col1:
+    st.metric('Latitud', f'{latitud:.5f}')
+with col2:
+    st.metric('Longitud', f'{longitud:.5f}')
 
 fuera_de_nyc = not (40.49 <= latitud <= 40.92 and -74.26 <= longitud <= -73.70)
 if fuera_de_nyc:
-    st.warning('La ubicación está fuera de la ciudad de Nueva York. Selecciona un punto dentro de la ciudad.')
+    st.warning('La ubicación está fuera de la ciudad de Nueva York. Selecciona un punto dentro de la ciudad para obtener una predicción fiable.')
 
-# El distrito es el del alojamiento del dataset más cercano al punto marcado
-distancias = (ubicaciones['latitude'] - latitud) ** 2 + (ubicaciones['longitude'] - longitud) ** 2
-distrito = ubicaciones.loc[distancias.idxmin(), 'neighbourhood_group']
-st.info(f'Distrito: {distrito}')
+# Determinar distrito y micro-barrio más cercano
+try:
+    dists = haversine_vec(latitud, longitud, ubicaciones['latitude'].values, ubicaciones['longitude'].values)
+    idx_cercano = int(np.argmin(dists))
+    distrito = str(ubicaciones.iloc[idx_cercano]['neighbourhood_group'])
+    barrio = str(ubicaciones.iloc[idx_cercano]['neighbourhood'])
+    dist_cercana_km = float(dists[idx_cercano])
+    st.info(f'**Neighbourhood Group:** {distrito} | **Neighbourhood (micro-barrio):** {barrio} | Distancia al punto de referencia más cercano: {dist_cercana_km:.2f} km')
+except Exception:
+    distancias = (ubicaciones['latitude'] - latitud) ** 2 + (ubicaciones['longitude'] - longitud) ** 2
+    idx_cercano = int(distancias.idxmin())
+    distrito = str(ubicaciones.iloc[idx_cercano]['neighbourhood_group'])
+    barrio = str(ubicaciones.iloc[idx_cercano].get('neighbourhood', 'Unknown'))
+    dist_cercana_km = float(np.sqrt(distancias.iloc[idx_cercano]) * 111.0)
+    st.info(f'**Neighbourhood Group:** {distrito} | **Neighbourhood (micro-barrio):** {barrio}')
 
-# ---------------- Alojamiento y anfitrión
-st.header('Alojamiento y anfitrión')
-tipo = st.selectbox('Tipo de alojamiento', ['Entire home/apt', 'Private room', 'Shared room'])
-noches_minimas = st.number_input('Noches mínimas', min_value=1, max_value=365, value=2)
-disponibilidad = st.number_input('Días disponibles al año', min_value=0, max_value=365, value=120)
-num_resenas = st.number_input('Número de reseñas', min_value=0, value=10)
-resenas_mes = st.number_input('Reseñas por mes', min_value=0.0, value=0.5)
-num_anuncios = st.number_input('Número de anuncios del anfitrión', min_value=1, value=1)
+# ---------------- Anuncio y alojamiento
+st.header('2) Anuncio, alojamiento y anfitrión')
+c_a1, c_a2 = st.columns(2)
+with c_a1:
+    nombre_anuncio = st.text_input('Título del anuncio', value='Cozy apartment near subway with great location', help='El modelo analiza palabras clave (lujo, transporte, espacio) para ajustar la estimación.')
+    tipo = st.selectbox('Tipo de alojamiento', ['Entire home/apt', 'Private room', 'Shared room'])
+with c_a2:
+    noches_minimas = st.number_input('Noches mínimas', min_value=1, max_value=365, value=2)
+    disponibilidad = st.number_input('Días disponibles al año', min_value=0, max_value=365, value=120)
+    num_resenas = st.number_input('Número de reseñas', min_value=0, value=10)
+    resenas_mes = st.number_input('Reseñas por mes', min_value=0.0, value=0.5)
+    num_anuncios = st.number_input('Número de anuncios del anfitrión', min_value=1, value=1)
 
-if st.button('Estimar precio', disabled=fuera_de_nyc):
+st.caption('⚠️ **Aviso regulatorio (NYC):** Desde septiembre de 2023, la *Local Law 18* de Nueva York restringe los alquileres completos de corta estancia (< 30 días) sin que el anfitrión esté presente. El dataset utilizado es de 2019, por lo que los precios pueden no reflejar la normativa actual.')
+
+# ---------------- Predicción
+st.header('3) Estimación')
+if st.button('Estimar precio', type='primary', disabled=fuera_de_nyc):
     datos = pd.DataFrame({
+        'name': [nombre_anuncio],
         'neighbourhood_group': [distrito],
+        'neighbourhood': [barrio],
         'latitude': [latitud],
         'longitude': [longitud],
         'room_type': [tipo],
@@ -114,6 +158,66 @@ if st.button('Estimar precio', disabled=fuera_de_nyc):
         'calculated_host_listings_count': [num_anuncios],
         'availability_365': [disponibilidad],
     })
-    precio = modelo.predict(datos)[0]
-    st.success(f'Precio estimado: USD {precio:.0f} por noche')
-    st.write('El error típico del modelo es de unos 23 USD; úsalo como precio de referencia.')
+
+    try:
+        precio_pred = float(modelo.predict(datos)[0])
+        precio_pred = max(precio_pred, 10.0)
+
+        medae_ref = 23.0
+        p_low = max(15.0, precio_pred - medae_ref * 1.2)
+        p_high = precio_pred + medae_ref * 1.6
+
+        m1, m2, m3 = st.columns(3)
+        with m1:
+            st.metric('Precio sugerido (referencia)', f'USD {precio_pred:.0f} / noche')
+        with m2:
+            st.metric('Rango razonable', f'USD {p_low:.0f} – USD {p_high:.0f}')
+        with m3:
+            st.metric('Error mediano típico (referencia)', f'~USD {medae_ref:.0f}')
+
+        st.success(f'**Precio sugerido: USD {precio_pred:.0f} por noche** — *Rango razonable: USD {p_low:.0f} – USD {p_high:.0f}*')
+
+        # Explicabilidad básica
+        st.subheader('¿Por qué este precio?')
+        razones = []
+        if tipo == 'Entire home/apt':
+            razones.append('- **Apartamento/casa completa:** Suele tener la mayor prima respecto a una habitación.')
+        elif tipo == 'Private room':
+            razones.append('- **Habitación privada:** Precio intermedio, generalmente menor que un alojamiento completo.')
+        else:
+            razones.append('- **Habitación compartida:** Suele ser la opción más económica.')
+
+        if distrito == 'Manhattan':
+            razones.append('- **Manhattan:** Uno de los distritos con mayor demanda en NYC.')
+        elif distrito == 'Brooklyn':
+            razones.append('- **Brooklyn:** Muy demandado con gran variación según el micro-barrio.')
+        elif distrito == 'Queens':
+            razones.append('- **Queens:** Generalmente más accesible, con buenas conexiones de transporte.')
+        else:
+            razones.append(f'- **{distrito}:** Influye según ubicación y demanda del barrio.')
+
+        titulo_low = nombre_anuncio.lower()
+        if any(p in titulo_low for p in PALABRAS_LUJO):
+            razones.append('- **Atributos de lujo detectados en el título:** Puede aumentar la prima (+según mercado).')
+        if any(p in titulo_low for p in PALABRAS_TRANSPORTE):
+            razones.append('- **Cercanía/transporte mencionado:** Suele ser valorado positivamente en NYC.')
+        if any(p in titulo_low for p in PALABRAS_PRESUPUESTO):
+            razones.append('- **Términos económicos/cozy:** Pueden orientar hacia un precio más competitivo.')
+
+        if dist_cercana_km < 2.0:
+            razones.append('- **Muy cerca de un punto de referencia:** Mayor accesibilidad -> suele subir el precio.')
+        elif dist_cercana_km > 6.0:
+            razones.append('- **Más alejado del centro:** Suele presionar el precio a la baja.')
+
+        if noches_minimas >= 7:
+            razones.append('- **Estadía mínima mayor (>=7 noches):** Puede ajustar la tarifa por tipo de estancia.')
+        if disponibilidad >= 300:
+            razones.append('- **Alta disponibilidad anual:** Puede reflejar mayor rotación o enfoque en alquileres de corta estancia.')
+
+        for r in razones:
+            st.write(r)
+
+        st.caption('Nota: Esta explicación es heurística para apoyar la decisión. El modelo combina todas las variables de forma no lineal.')
+    except Exception as e:
+        st.error(f'Error al predecir: {e}')
+        st.info('Verifica que el archivo models/modelo_final_airbnb.pkl sea compatible con la versión actual de features.py y las dependencias.')

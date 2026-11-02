@@ -49,7 +49,9 @@ def test_modelo_carga_e_inferencia():
 
     # Caso de prueba: apartamento entero en Times Square
     ejemplo = pd.DataFrame({
+        'name': ['Luxury Midtown Apartment with Skyline View'],
         'neighbourhood_group': ['Manhattan'],
+        'neighbourhood': ['Midtown'],
         'latitude': [40.7580],
         'longitude': [-73.9855],
         'room_type': ['Entire home/apt'],
@@ -72,8 +74,9 @@ def test_archivo_ubicaciones():
     assert os.path.exists(ruta_ubicaciones), f"El archivo de ubicaciones no existe en {ruta_ubicaciones}"
 
     df_ubicaciones = pd.read_csv(ruta_ubicaciones)
-    columnas_esperadas = {'latitude', 'longitude', 'neighbourhood_group'}
+    columnas_esperadas = {'latitude', 'longitude', 'neighbourhood_group', 'neighbourhood'}
     assert columnas_esperadas.issubset(df_ubicaciones.columns)
 
     distritos_esperados = {'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'}
     assert set(df_ubicaciones['neighbourhood_group'].unique()) == distritos_esperados
+    assert df_ubicaciones['neighbourhood'].nunique() >= 200

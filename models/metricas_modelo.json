@@ -1,0 +1,128 @@
+{
+  "generado_en": "2026-11-02T11:21:47.651442+00:00",
+  "datos": "data/AB_NYC_2019.csv",
+  "n_train": 34209,
+  "n_test": 14661,
+  "validacion_cruzada": [
+    {
+      "modelo": "XGBoost",
+      "R2_log": 0.623026,
+      "R2_USD": 0.199075,
+      "MAE": 54.796761,
+      "MedAE": 23.234464,
+      "RMSE": 203.068872,
+      "MAPE": 0.312162
+    },
+    {
+      "modelo": "Random Forest",
+      "R2_log": 0.609293,
+      "R2_USD": 0.178967,
+      "MAE": 55.48541,
+      "MedAE": 23.61745,
+      "RMSE": 205.621561,
+      "MAPE": 0.317127
+    },
+    {
+      "modelo": "Gradient Boosting",
+      "R2_log": 0.611158,
+      "R2_USD": 0.174135,
+      "MAE": 55.754873,
+      "MedAE": 23.681711,
+      "RMSE": 206.18081,
+      "MAPE": 0.317473
+    },
+    {
+      "modelo": "Ridge",
+      "R2_log": 0.568758,
+      "R2_USD": 0.139978,
+      "MAE": 58.604045,
+      "MedAE": 25.549051,
+      "RMSE": 210.278615,
+      "MAPE": 0.334843
+    }
+  ],
+  "test_base": {
+    "R2_log": 0.6193174159160695,
+    "R2_USD": 0.13757503032684326,
+    "MAE": 57.079471588134766,
+    "MedAE": 23.196426391601562,
+    "RMSE": 245.12118335886436,
+    "MAPE": 0.31123489141464233
+  },
+  "test_avanzado": {
+    "R2_log": 0.6334690507789877,
+    "R2_USD": 0.14611154794692993,
+    "MAE": 55.9340934753418,
+    "MedAE": 22.892742156982422,
+    "RMSE": 243.90502281882183,
+    "MAPE": 0.30516019463539124
+  },
+  "mejora_porcentual": {
+    "MedAE_%": 1.3091854300845696,
+    "MAE_%": 2.0066375544917636,
+    "RMSE_%": 0.49614665014978687,
+    "R2_log_%": 2.285037445941307
+  },
+  "top_caracteristicas": [
+    {
+      "caracteristica": "room_type_Entire home/apt",
+      "importancia": 0.5580300092697144
+    },
+    {
+      "caracteristica": "room_type_Private room",
+      "importancia": 0.15858499705791473
+    },
+    {
+      "caracteristica": "room_type_Shared room",
+      "importancia": 0.08306500315666199
+    },
+    {
+      "caracteristica": "neighbourhood",
+      "importancia": 0.031543001532554626
+    },
+    {
+      "caracteristica": "neighbourhood_group_Manhattan",
+      "importancia": 0.02229899913072586
+    },
+    {
+      "caracteristica": "feat_luxury_count",
+      "importancia": 0.011036000214517117
+    },
+    {
+      "caracteristica": "dist_times_square_km",
+      "importancia": 0.008876999840140343
+    },
+    {
+      "caracteristica": "feat_budget_count",
+      "importancia": 0.008085999637842178
+    },
+    {
+      "caracteristica": "availability_ratio",
+      "importancia": 0.007615000009536743
+    },
+    {
+      "caracteristica": "is_full_year_available",
+      "importancia": 0.0075170001946389675
+    },
+    {
+      "caracteristica": "feat_has_budget",
+      "importancia": 0.0074350000359117985
+    },
+    {
+      "caracteristica": "feat_has_luxury",
+      "importancia": 0.007110000122338533
+    },
+    {
+      "caracteristica": "availability_365",
+      "importancia": 0.007067999802529812
+    },
+    {
+      "caracteristica": "minimum_nights",
+      "importancia": 0.006434999871999025
+    },
+    {
+      "caracteristica": "calculated_host_listings_count",
+      "importancia": 0.006432000081986189
+    }
+  ]
+}
