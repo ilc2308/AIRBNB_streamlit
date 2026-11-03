@@ -163,7 +163,7 @@ def construir_preprocesamiento():
     return ColumnTransformer([
         ('num', StandardScaler(), COLUMNAS_NUMERICAS),
         ('cat_ohe', OneHotEncoder(handle_unknown='ignore'), COLUMNAS_CATEGORICAS_OHE),
-        ('cat_te', TargetEncoder(smooth='auto', cv=5), COLUMNAS_CATEGORICAS_TARGET)
+        ('cat_te', TargetEncoder(smooth='auto', cv=5, random_state=42), COLUMNAS_CATEGORICAS_TARGET)
     ], verbose_feature_names_out=False)
 
 

@@ -38,29 +38,30 @@ Seguimos la metodología **CRISP-DM**, que divide un proyecto de minería de dat
    - Codificamos el **micro-barrio** (`neighbourhood`, 221 zonas) con **Target Encoding bayesiano out-of-fold**, evitando fuga de información.
    - Analizamos el **título del anuncio** con reglas semánticas: palabras de lujo, presupuesto, transporte y espacio, además de métricas estructurales del texto.
    - Añadimos **ratios de negocio** (disponibilidad anual, anfitrión multi-anuncio) y transformaciones logarítmicas en los conteos sesgados.
-4. **Probar varios modelos.** Comparamos Ridge, Random Forest, Gradient Boosting y XGBoost con validación cruzada de 5 pliegues, usando el pipeline de `features.py` como única fuente de verdad.
-5. **Elegir y evaluar.** Comparamos el modelo avanzado contra una línea base de 9 variables sobre el mismo 30 % de prueba, y medimos MAE, MedAE, RMSE, MAPE y R².
-6. **Desplegar.** El modelo ganador, **XGBoost**, se guardó como *pipeline* completo (preprocesamiento + Target Encoding + modelo) en `models/modelo_final_airbnb.pkl` y se publicó en Streamlit.
+4. **Probar varios modelos.** Comparamos 7 modelos con validación cruzada de 10 pliegues sobre el 70 % de entrenamiento: 4 de aprendizaje supervisado (Ridge, KNN, árbol de decisión y red neuronal) y 3 de ensamble (Random Forest, Gradient Boosting y XGBoost). Todos usan el mismo pipeline de `features.py`.
+5. **Elegir con estadística.** Medimos 8 medidas de calidad (MAE, MedAE, RMSE, MSE, MAPE, error máximo, R² log y R² en dólares). Como es un problema de regresión, el criterio de selección es **minimizar el error absoluto medio (MAE)**. Con ANOVA (F = 4.39, p = 0.0009) y la prueba de Tukey seleccionamos los 3 mejores: XGBoost, Random Forest y Gradient Boosting.
+6. **Ajustar hiperparámetros.** Optimizamos los 3 modelos con GridSearch y con optimización bayesiana (Optuna), minimizando el MAE. Ganó **XGBoost optimizado con Optuna** (MAE de validación cruzada: 54.9 USD).
+7. **Desplegar.** El ganador se guardó como *pipeline* completo (preparación + características + preprocesamiento + modelo) en `models/modelo_final_airbnb.pkl` y se publicó en Streamlit.
 
 ---
 
 ## ¿Qué tan bien funciona?
 
-Lo evaluamos con un 30 % de los datos que el modelo nunca vio durante el entrenamiento (comparativa base 9 variables vs modelo avanzado):
+Lo evaluamos con un 30 % de los datos que el modelo nunca vio durante el entrenamiento. Todas las medidas son de error, así que **menor es mejor** (salvo el R²):
 
-| Medida | Modelo base (9 variables) | Modelo avanzado (minería) | Mejora |
+| Medida | Línea base ingenua (mediana) | Modelo base (9 variables) | Modelo final (34 características) |
 |---|---|---|---|
-| Error mediano (MedAE) | ~23.20 USD | ~22.89 USD | -1.31 % |
-| Error absoluto medio (MAE) | ~57.08 USD | ~55.93 USD | -2.01 % |
-| RMSE | ~245.12 USD | ~243.91 USD | -0.50 % |
-| Error porcentual medio (MAPE) | ~31.12 % | ~30.52 % | -1.93 % |
-| R² en escala logarítmica | ~0.619 | ~0.634 | +2.29 % |
+| Error absoluto medio (MAE) | 85.16 USD | 56.92 USD | **55.91 USD** |
+| Error mediano (MedAE) | 47.00 USD | 22.97 USD | **22.91 USD** |
+| RMSE | 268.03 USD | 245.45 USD | **245.10 USD** |
+| Error porcentual medio (MAPE) | 57.8 % | 31.0 % | **30.4 %** |
+| R² en escala logarítmica | — | 0.621 | **0.634** |
 
-En palabras simples: **para un alojamiento común, el modelo suele equivocarse en unos 23 dólares**. Frente a la estrategia ingenua de cobrar siempre el precio mediano del mercado, el modelo reduce el error promedio de forma sustancial (MAE mediano base: ~85 USD).
+En palabras simples: **para un alojamiento común, el modelo se equivoca en unos 23 dólares**, y el 75 % de sus estimaciones tiene un error menor de 50 dólares. Frente a cobrar siempre el precio mediano del mercado, reduce el error promedio un 34 %. Frente al modelo de 9 variables, la minería de características reduce el MAE un 1.8 % y el MAPE un 2.0 %: una mejora modesta pero en todas las medidas de error.
 
-Las métricas detalladas y la importancia de características se generan con `python train_model.py` y se guardan en `models/metricas_modelo.json`.
+Todas las cifras salen del notebook `Modelo_Airbnb_NYC.ipynb` y se guardan en `models/metricas_modelo.json`.
 
-Lo que más influye en el precio es, por mucho, **el tipo de alojamiento**: no es lo mismo alquilar un apartamento completo que una habitación compartida. Le siguen el **micro-barrio codificado con Target Encoding**, la **distancia a los POIs** (especialmente Financial District y Times Square) y los **atributos de lujo detectados en el título**.
+Lo que más influye en el precio es, por mucho, **el tipo de alojamiento**: no es lo mismo alquilar un apartamento completo que una habitación compartida. Le siguen **estar en Manhattan**, el **micro-barrio** (codificado con Target Encoding), las **palabras de lujo del título** y la **distancia a Times Square**.
 
 ### Lo que el modelo no sabe hacer
 
@@ -81,23 +82,22 @@ El repositorio está organizado de forma modular para separar datos, experimenta
 AIRBNB_streamlit/
 ├── app.py                     # Aplicación web interactiva en Streamlit
 ├── features.py                # Transformaciones, minería y pipeline de producción
-├── train_model.py             # Entrenamiento reproducible, comparativa y exportación
+├── train_model.py             # Reentrena el modelo ganador y regenera el .pkl
 ├── requirements.txt           # Dependencias para producción y despliegue
 ├── data/
 │   ├── AB_NYC_2019.csv        # Dataset original de Airbnb NYC 2019
 │   ├── Airbnb_NYC_2019_limpio.csv # Dataset con reglas de calidad aplicadas
-│   ├── Airbnb_NYC_2019_minado.csv # Dataset enriquecido con variables minadas
 │   └── ubicaciones_distritos.csv  # Coordenadas de referencia para inferir distrito y barrio
 ├── models/
-│   ├── modelo_final_airbnb.pkl    # Pipeline serializado (preprocesamiento + XGBoost)
-│   ├── metricas_modelo.json       # Métricas base vs avanzado, CV e importancias
+│   ├── modelo_final_airbnb.pkl    # Pipeline final (preparación + características + XGBoost optimizado)
+│   ├── metricas_modelo.json       # Validación cruzada, ANOVA, ajuste, prueba y ganador
+│   ├── resultados_validacion_cruzada.csv # Medidas de los 7 modelos en los 10 pliegues
 │   └── importancia_caracteristicas.csv
 ├── notebooks/
 │   ├── PreparaciondeDatosAIRBNB.ipynb # Fase 2 y 3 CRISP-DM: Limpieza y EDA
-│   ├── 04_mineria_caracteristicas.ipynb # Fase de minería: POIs, Target Encoding y NLP
-│   ├── 05_modelado_avanzado_y_evaluacion.ipynb # Modelado y evaluación del modelo enriquecido
-│   ├── Modelo_Airbnb_NYC.ipynb        # Fase 4 y 5 CRISP-DM: Modelado, ANOVA, Optuna
-│   └── Despliegue_Airbnb_NYC.ipynb    # Fase 6 CRISP-DM: Preparación para producción
+│   ├── 04_mineria_caracteristicas.ipynb # Exploración de las nuevas variables (genera data/*_minado.csv, no versionado)
+│   ├── Modelo_Airbnb_NYC.ipynb        # Fase 4 y 5 CRISP-DM: 7 modelos, ANOVA/Tukey, GridSearch y Optuna
+│   └── Despliegue_Airbnb_NYC.ipynb    # Fase 6 CRISP-DM: prueba del modelo y de la app Streamlit
 ├── docs/
 │   ├── METODOLOGIA_CRISP_DM_Airbnb_NYC.pdf # Documento formal de la metodología CRISP-DM
 │   └── output.html            # Reporte exploratorio automatizado (YData Profiling)
@@ -153,7 +153,7 @@ La aplicación se abrirá en tu navegador en `http://localhost:8501`.
 python train_model.py
 ```
 
-El script entrena la línea base de 9 variables y el modelo avanzado con el mismo split, ejecuta validación cruzada de 5 pliegues, imprime la comparativa, reexporta `models/modelo_final_airbnb.pkl` y guarda `models/metricas_modelo.json`.
+El script lee el modelo ganador y sus hiperparámetros de `models/metricas_modelo.json`, lo reentrena con el mismo 70 % de los datos, imprime sus métricas en el 30 % de prueba y reexporta `models/modelo_final_airbnb.pkl`. Sirve para regenerar el modelo con otras versiones de las librerías. La selección completa de modelos se reproduce ejecutando `notebooks/Modelo_Airbnb_NYC.ipynb` (unos 70 minutos con 2 CPU).
 
 ---
 

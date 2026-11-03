@@ -1,128 +1,295 @@
 {
-  "generado_en": "2026-11-02T11:21:47.651442+00:00",
-  "datos": "data/AB_NYC_2019.csv",
+  "generado_en": "2026-11-03T23:03:14.380935+00:00",
   "n_train": 34209,
   "n_test": 14661,
-  "validacion_cruzada": [
+  "validacion_cruzada_10_pliegues": [
     {
       "modelo": "XGBoost",
-      "R2_log": 0.623026,
-      "R2_USD": 0.199075,
-      "MAE": 54.796761,
-      "MedAE": 23.234464,
-      "RMSE": 203.068872,
-      "MAPE": 0.312162
+      "MAE": 54.9879,
+      "MedAE": 23.41,
+      "RMSE": 203.0669,
+      "MSE": 43635.5387,
+      "MAPE": 0.3131,
+      "Error_max": 6313.5723,
+      "R2_log": 0.6211,
+      "R2_USD": 0.1953,
+      "Tiempo_s": 9.0046
     },
     {
       "modelo": "Random Forest",
-      "R2_log": 0.609293,
-      "R2_USD": 0.178967,
-      "MAE": 55.48541,
-      "MedAE": 23.61745,
-      "RMSE": 205.621561,
-      "MAPE": 0.317127
+      "MAE": 55.275,
+      "MedAE": 23.4881,
+      "RMSE": 203.9622,
+      "MSE": 44036.8573,
+      "MAPE": 0.3161,
+      "Error_max": 6332.2044,
+      "R2_log": 0.6124,
+      "R2_USD": 0.1885,
+      "Tiempo_s": 181.0034
     },
     {
       "modelo": "Gradient Boosting",
-      "R2_log": 0.611158,
-      "R2_USD": 0.174135,
-      "MAE": 55.754873,
-      "MedAE": 23.681711,
-      "RMSE": 206.18081,
-      "MAPE": 0.317473
+      "MAE": 56.666,
+      "MedAE": 24.3083,
+      "RMSE": 207.4736,
+      "MSE": 45433.1207,
+      "MAPE": 0.3211,
+      "Error_max": 6388.0252,
+      "R2_log": 0.5984,
+      "R2_USD": 0.1587,
+      "Tiempo_s": 128.5005
+    },
+    {
+      "modelo": "Red neuronal (MLP)",
+      "MAE": 57.6708,
+      "MedAE": 25.0281,
+      "RMSE": 206.0906,
+      "MSE": 44837.0317,
+      "MAPE": 0.3328,
+      "Error_max": 6352.553,
+      "R2_log": 0.5864,
+      "R2_USD": 0.1699,
+      "Tiempo_s": 23.3767
     },
     {
       "modelo": "Ridge",
-      "R2_log": 0.568758,
-      "R2_USD": 0.139978,
-      "MAE": 58.604045,
-      "MedAE": 25.549051,
-      "RMSE": 210.278615,
-      "MAPE": 0.334843
+      "MAE": 58.5871,
+      "MedAE": 25.5435,
+      "RMSE": 209.046,
+      "MSE": 46051.4127,
+      "MAPE": 0.3347,
+      "Error_max": 6407.3832,
+      "R2_log": 0.5691,
+      "R2_USD": 0.1449,
+      "Tiempo_s": 2.0994
+    },
+    {
+      "modelo": "Árbol de decisión",
+      "MAE": 58.8046,
+      "MedAE": 25.3615,
+      "RMSE": 206.6079,
+      "MSE": 45017.0162,
+      "MAPE": 0.3422,
+      "Error_max": 6349.6547,
+      "R2_log": 0.5635,
+      "R2_USD": 0.1648,
+      "Tiempo_s": 5.3658
+    },
+    {
+      "modelo": "KNN",
+      "MAE": 60.6928,
+      "MedAE": 27.5659,
+      "RMSE": 209.6249,
+      "MSE": 46299.4516,
+      "MAPE": 0.3694,
+      "Error_max": 6404.0758,
+      "R2_log": 0.5128,
+      "R2_USD": 0.14,
+      "Tiempo_s": 3.6597
     }
   ],
-  "test_base": {
-    "R2_log": 0.6193174159160695,
-    "R2_USD": 0.13757503032684326,
-    "MAE": 57.079471588134766,
-    "MedAE": 23.196426391601562,
-    "RMSE": 245.12118335886436,
-    "MAPE": 0.31123489141464233
+  "anova": {
+    "F": 4.387108591631582,
+    "p_valor": 0.0009166577292609473
   },
-  "test_avanzado": {
-    "R2_log": 0.6334690507789877,
-    "R2_USD": 0.14611154794692993,
-    "MAE": 55.9340934753418,
-    "MedAE": 22.892742156982422,
-    "RMSE": 243.90502281882183,
-    "MAPE": 0.30516019463539124
+  "tukey_significativas": 2,
+  "modelos_seleccionados": [
+    "XGBoost",
+    "Random Forest",
+    "Gradient Boosting"
+  ],
+  "hiperparametrizacion_mae_cv": {
+    "XGBoost - GridSearch": 55.097710927327476,
+    "Random Forest - GridSearch": 55.475808395610976,
+    "Gradient Boosting - GridSearch": 56.0576734841022,
+    "XGBoost - Bayesiana (Optuna)": 54.90973663330078,
+    "Random Forest - Bayesiana (Optuna)": 55.35626451319558,
+    "Gradient Boosting - Bayesiana (Optuna)": 55.556704349518135
   },
-  "mejora_porcentual": {
-    "MedAE_%": 1.3091854300845696,
-    "MAE_%": 2.0066375544917636,
-    "RMSE_%": 0.49614665014978687,
-    "R2_log_%": 2.285037445941307
+  "mejor_modelo": {
+    "nombre": "XGBoost - Bayesiana (Optuna)",
+    "parametros": {
+      "n_estimators": 355,
+      "learning_rate": 0.029760415357561427,
+      "max_depth": 8,
+      "subsample": 0.9534267975770824,
+      "colsample_bytree": 0.5124204431073567,
+      "min_child_weight": 20
+    }
+  },
+  "test_modelos_ajustados": [
+    {
+      "modelo": "XGBoost - Bayesiana (Optuna)",
+      "MAE": 55.9061,
+      "MedAE": 22.9065,
+      "RMSE": 245.103,
+      "MSE": 60075.5039,
+      "MAPE": 0.3042,
+      "Error_max": 9937.725,
+      "R2_log": 0.634,
+      "R2_USD": 0.1377,
+      "MAE_val_cruzada": 54.9097
+    },
+    {
+      "modelo": "XGBoost - GridSearch",
+      "MAE": 55.7784,
+      "MedAE": 22.461,
+      "RMSE": 243.504,
+      "MSE": 59294.1992,
+      "MAPE": 0.3059,
+      "Error_max": 9950.2298,
+      "R2_log": 0.6337,
+      "R2_USD": 0.1489,
+      "MAE_val_cruzada": 55.0977
+    },
+    {
+      "modelo": "Random Forest - Bayesiana (Optuna)",
+      "MAE": 56.4457,
+      "MedAE": 23.0054,
+      "RMSE": 246.777,
+      "MSE": 60898.8836,
+      "MAPE": 0.3083,
+      "Error_max": 9948.0036,
+      "R2_log": 0.6226,
+      "R2_USD": 0.1259,
+      "MAE_val_cruzada": 55.3563
+    },
+    {
+      "modelo": "Random Forest - GridSearch",
+      "MAE": 56.513,
+      "MedAE": 23.2426,
+      "RMSE": 246.8251,
+      "MSE": 60922.6151,
+      "MAPE": 0.3089,
+      "Error_max": 9949.3728,
+      "R2_log": 0.6212,
+      "R2_USD": 0.1255,
+      "MAE_val_cruzada": 55.4758
+    },
+    {
+      "modelo": "Gradient Boosting - Bayesiana (Optuna)",
+      "MAE": 56.4272,
+      "MedAE": 23.1655,
+      "RMSE": 245.4767,
+      "MSE": 60258.8218,
+      "MAPE": 0.3082,
+      "Error_max": 9951.6498,
+      "R2_log": 0.6266,
+      "R2_USD": 0.1351,
+      "MAE_val_cruzada": 55.5567
+    },
+    {
+      "modelo": "Gradient Boosting - GridSearch",
+      "MAE": 56.7115,
+      "MedAE": 23.2449,
+      "RMSE": 246.0294,
+      "MSE": 60530.4823,
+      "MAPE": 0.31,
+      "Error_max": 9948.9808,
+      "R2_log": 0.624,
+      "R2_USD": 0.1312,
+      "MAE_val_cruzada": 56.0577
+    }
+  ],
+  "test_comparativa": [
+    {
+      "modelo": "Línea base ingenua (mediana)",
+      "MAE": 85.161,
+      "MedAE": 47.0,
+      "RMSE": 268.0343,
+      "MSE": 71842.3713,
+      "MAPE": 0.5784,
+      "Error_max": 9893.0,
+      "R2_log": NaN,
+      "R2_USD": -0.0312
+    },
+    {
+      "modelo": "Modelo base (9 variables)",
+      "MAE": 56.9209,
+      "MedAE": 22.971,
+      "RMSE": 245.4482,
+      "MSE": 60244.8125,
+      "MAPE": 0.3103,
+      "Error_max": 9948.7176,
+      "R2_log": 0.6205,
+      "R2_USD": 0.1353
+    },
+    {
+      "modelo": "Modelo final (XGBoost - Bayesiana (Optuna))",
+      "MAE": 55.9061,
+      "MedAE": 22.9065,
+      "RMSE": 245.103,
+      "MSE": 60075.5039,
+      "MAPE": 0.3042,
+      "Error_max": 9937.725,
+      "R2_log": 0.634,
+      "R2_USD": 0.1377
+    }
+  ],
+  "rango_referencia_razon": {
+    "q25": 0.7807191017503378,
+    "q75": 1.2167695321560639
   },
   "top_caracteristicas": [
     {
       "caracteristica": "room_type_Entire home/apt",
-      "importancia": 0.5580300092697144
+      "importancia": 0.5701165795326233
     },
     {
       "caracteristica": "room_type_Private room",
-      "importancia": 0.15858499705791473
-    },
-    {
-      "caracteristica": "room_type_Shared room",
-      "importancia": 0.08306500315666199
-    },
-    {
-      "caracteristica": "neighbourhood",
-      "importancia": 0.031543001532554626
+      "importancia": 0.18324671685695648
     },
     {
       "caracteristica": "neighbourhood_group_Manhattan",
-      "importancia": 0.02229899913072586
+      "importancia": 0.057414986193180084
+    },
+    {
+      "caracteristica": "room_type_Shared room",
+      "importancia": 0.05467764288187027
+    },
+    {
+      "caracteristica": "neighbourhood",
+      "importancia": 0.015315541066229343
     },
     {
       "caracteristica": "feat_luxury_count",
-      "importancia": 0.011036000214517117
-    },
-    {
-      "caracteristica": "dist_times_square_km",
-      "importancia": 0.008876999840140343
-    },
-    {
-      "caracteristica": "feat_budget_count",
-      "importancia": 0.008085999637842178
-    },
-    {
-      "caracteristica": "availability_ratio",
-      "importancia": 0.007615000009536743
+      "importancia": 0.010056045837700367
     },
     {
       "caracteristica": "is_full_year_available",
-      "importancia": 0.0075170001946389675
+      "importancia": 0.008283219300210476
     },
     {
-      "caracteristica": "feat_has_budget",
-      "importancia": 0.0074350000359117985
+      "caracteristica": "dist_times_square_km",
+      "importancia": 0.008153416216373444
     },
     {
       "caracteristica": "feat_has_luxury",
-      "importancia": 0.007110000122338533
+      "importancia": 0.00770984124392271
     },
     {
-      "caracteristica": "availability_365",
-      "importancia": 0.007067999802529812
+      "caracteristica": "neighbourhood_group_Brooklyn",
+      "importancia": 0.0064344024285674095
     },
     {
-      "caracteristica": "minimum_nights",
-      "importancia": 0.006434999871999025
+      "caracteristica": "feat_budget_count",
+      "importancia": 0.006161753553897142
+    },
+    {
+      "caracteristica": "neighbourhood_group_Queens",
+      "importancia": 0.005381262861192226
+    },
+    {
+      "caracteristica": "longitude",
+      "importancia": 0.0053284610621631145
     },
     {
       "caracteristica": "calculated_host_listings_count",
-      "importancia": 0.006432000081986189
+      "importancia": 0.004785584285855293
+    },
+    {
+      "caracteristica": "dist_fidi_km",
+      "importancia": 0.004476575180888176
     }
   ]
 }

@@ -1,6 +1,6 @@
 import os
 import sys
-import math
+import json
 import joblib
 import pandas as pd
 import numpy as np
@@ -79,8 +79,26 @@ def cargar_ubicaciones():
     return df
 
 
+# Métricas del modelo final (error mediano y rango de referencia calculados con el 30 % de prueba)
+@st.cache_data
+def cargar_metricas():
+    ruta = 'models/metricas_modelo.json' if os.path.exists('models/metricas_modelo.json') else 'metricas_modelo.json'
+    try:
+        with open(ruta, encoding='utf-8') as f:
+            metricas = json.load(f)
+        nombre = metricas['mejor_modelo']['nombre']
+        fila = next(r for r in metricas['test_modelos_ajustados'] if r['modelo'] == nombre)
+        return {'medae': float(fila['MedAE']), 'mae': float(fila['MAE']),
+                'q25': float(metricas['rango_referencia_razon']['q25']),
+                'q75': float(metricas['rango_referencia_razon']['q75']),
+                'modelo': nombre}
+    except Exception:
+        return {'medae': 23.0, 'mae': 56.0, 'q25': 0.8, 'q75': 1.25, 'modelo': 'XGBoost'}
+
+
 modelo = cargar_modelo()
 ubicaciones = cargar_ubicaciones()
+metricas_modelo = cargar_metricas()
 
 # ---------------- Ubicación: se elige con un clic en el mapa
 st.header('1) Ubicación')
@@ -163,9 +181,10 @@ if st.button('Estimar precio', type='primary', disabled=fuera_de_nyc):
         precio_pred = float(modelo.predict(datos)[0])
         precio_pred = max(precio_pred, 10.0)
 
-        medae_ref = 23.0
-        p_low = max(15.0, precio_pred - medae_ref * 1.2)
-        p_high = precio_pred + medae_ref * 1.6
+        # Rango en el que estuvo el precio real de la mitad central de los alojamientos de prueba
+        medae_ref = metricas_modelo['medae']
+        p_low = max(10.0, precio_pred * metricas_modelo['q25'])
+        p_high = precio_pred * metricas_modelo['q75']
 
         m1, m2, m3 = st.columns(3)
         with m1:
@@ -217,7 +236,9 @@ if st.button('Estimar precio', type='primary', disabled=fuera_de_nyc):
         for r in razones:
             st.write(r)
 
-        st.caption('Nota: Esta explicación es heurística para apoyar la decisión. El modelo combina todas las variables de forma no lineal.')
+        st.caption('Nota: Esta explicación es heurística para apoyar la decisión. El modelo combina todas las variables de forma no lineal. '
+                   f'El rango razonable corresponde a la mitad central de los errores del modelo ({metricas_modelo["modelo"]}) '
+                   'en el 30 % de prueba: en la mitad de los alojamientos de prueba, el precio real quedó dentro de ese rango.')
     except Exception as e:
         st.error(f'Error al predecir: {e}')
         st.info('Verifica que el archivo models/modelo_final_airbnb.pkl sea compatible con la versión actual de features.py y las dependencias.')
