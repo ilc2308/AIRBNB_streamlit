@@ -1,0 +1,51 @@
+id,titulo,grupo,efecto,palabras_clave,precio_referencia_usd
+1,Spectacular skyline view from luxury suite,Lujo,Sube el precio,luxury; lux; spectacular; skyline; view,451
+2,Luxury penthouse with skyline view and terrace,Lujo,Sube el precio,luxury; lux; penthouse; skyline; terrace; view,449
+3,Exclusive high-end loft with city views,Lujo,Sube el precio,exclusive; high-end; views; view; loft,426
+4,Luxury condo with balcony and doorman,Lujo,Sube el precio,luxury; lux; balcony,415
+5,Stunning duplex with private balcony,Lujo,Sube el precio,stunning; balcony; duplex,413
+6,Gorgeous penthouse with rooftop pool,Lujo,Sube el precio,penthouse; pool; gorgeous,413
+7,Stunning views of Central Park,Lujo,Sube el precio,stunning; views; view,406
+8,Gorgeous apartment with Hudson River view,Lujo,Sube el precio,gorgeous; view,378
+9,Exclusive townhouse with private terrace,Lujo,Sube el precio,exclusive; terrace,373
+10,Spectacular penthouse near Times Square,Lujo,Sube el precio,penthouse; spectacular,369
+11,High-end duplex in the heart of SoHo,Lujo,Sube el precio,duplex; high-end,367
+12,Lux 2BR apartment with terrace,Lujo,Sube el precio,lux; terrace,363
+13,Massive loft with exposed brick,Espacio,Sube un poco el precio,massive; loft,346
+14,Large sunny loft in Williamsburg,Espacio,Sube un poco el precio,large; loft,345
+15,Huge loft perfect for groups,Espacio,Sube un poco el precio,huge; loft,333
+16,Spacious loft in Midtown,Espacio,Sube un poco el precio,spacious; loft,326
+17,Large studio with high ceilings,Espacio,Sube un poco el precio,large,295
+18,Big apartment with two bathrooms,Espacio,Sube un poco el precio,big,295
+19,Huge 3 bedroom apartment for families,Espacio,Sube un poco el precio,huge,292
+20,Spacious home with backyard,Espacio,Sube un poco el precio,spacious,286
+21,Elegant flat on the Upper West Side,Neutral,Sin palabras clave,,284
+22,Charming studio in the East Village,Neutral,Sin palabras clave,,281
+23,Bright and modern 1BR,Neutral,Sin palabras clave,,277
+24,Sunny room in Astoria,Neutral,Sin palabras clave,,277
+25,Charming brownstone apartment,Neutral,Sin palabras clave,,274
+26,Family friendly home in Queens,Neutral,Sin palabras clave,,273
+27,Classic New York apartment,Neutral,Sin palabras clave,,272
+28,Comfortable place to stay,Neutral,Sin palabras clave,,272
+29,Artist home in Bushwick,Neutral,Sin palabras clave,,272
+30,Quiet retreat in Park Slope,Neutral,Sin palabras clave,,272
+31,Welcoming home near the park,Neutral,Sin palabras clave,,272
+32,Beautiful home in Harlem,Neutral,Sin palabras clave,,268
+33,"Steps to the subway, quiet street",Transporte,Casi no cambia el precio,subway; steps to,289
+34,"Modern flat, walk to everything",Transporte,Casi no cambia el precio,walk to,289
+35,Bright room 5 min to the train,Transporte,Casi no cambia el precio,train; min to,288
+36,Walk to Central Park and metro,Transporte,Casi no cambia el precio,metro; walk to,286
+37,Room steps to the L train,Transporte,Casi no cambia el precio,train; steps to,285
+38,Apartment 10 minutes to Manhattan,Transporte,Casi no cambia el precio,minutes to,285
+39,Sunny room near station,Transporte,Casi no cambia el precio,station,281
+40,Cozy apartment near subway with great location,Economía,Baja el precio,subway; cozy,244
+41,Budget private room for travelers,Economía,Baja el precio,budget,230
+42,Cozy room in a quiet building,Economía,Baja el precio,cozy,229
+43,Budget friendly shared room,Economía,Baja el precio,budget,226
+44,Cheap bed near the airport,Economía,Baja el precio,cheap,225
+45,Basic room for short stays,Economía,Baja el precio,basic,225
+46,Tiny cozy nook for one,Economía,Baja el precio,cozy; tiny,216
+47,Simple and economical room,Economía,Baja el precio,simple; economical,216
+48,"Tiny studio, simple and clean",Economía,Baja el precio,simple; tiny,215
+49,Cozy small bedroom in Brooklyn,Economía,Baja el precio,cozy; small,215
+50,"Small cheap room, basic",Economía,Baja el precio,cheap; small; basic,214

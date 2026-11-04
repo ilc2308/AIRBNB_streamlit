@@ -4,7 +4,8 @@ La selección completa (7 modelos, validación cruzada de 10 pliegues, ANOVA, Tu
 GridSearch y optimización bayesiana) se hace en notebooks/Modelo_Airbnb_NYC.ipynb,
 que guarda el ganador y sus hiperparámetros en models/metricas_modelo.json.
 
-Este script lee ese ganador, lo vuelve a entrenar con el mismo 70 % de los datos,
+Este script lee ese ganador, lo vuelve a entrenar con el mismo 70 % de los datos limpios
+(data/Airbnb_NYC_2019_limpio.csv, salida de notebooks/PreparaciondeDatosAIRBNB.ipynb),
 lo evalúa con el mismo 30 % de prueba y exporta models/modelo_final_airbnb.pkl.
 Sirve para regenerar el .pkl con otra versión de las librerías sin repetir la selección.
 
@@ -29,17 +30,16 @@ from features import construir_pipeline
 
 warnings.filterwarnings('ignore')
 
-RUTA_DATOS = 'data/AB_NYC_2019.csv'
+RUTA_DATOS = 'data/Airbnb_NYC_2019_limpio.csv'  # salida de la preparación de datos
 RUTA_MODELO = 'models/modelo_final_airbnb.pkl'
 RUTA_METRICAS = 'models/metricas_modelo.json'
 
 
 def cargar_datos():
-    # Mismas reglas de calidad del notebook de preparación
+    # Datos limpios del notebook de preparación: las reglas de calidad ya están aplicadas
     df = pd.read_csv(RUTA_DATOS)
-    df = df.drop_duplicates(subset='id', keep='last')
-    df = df[df['price'] > 0]
-    df = df[(df['minimum_nights'] >= 1) & (df['minimum_nights'] <= 365)]
+    df['name'] = df['name'].fillna('')  # el CSV lee los títulos vacíos como nulos
+    assert (df['price'] > 0).all() and df['minimum_nights'].between(1, 365).all(), 'Datos sin preparar'
     return df
 
 

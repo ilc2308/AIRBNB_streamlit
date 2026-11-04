@@ -80,3 +80,18 @@ def test_archivo_ubicaciones():
     distritos_esperados = {'Manhattan', 'Brooklyn', 'Queens', 'Bronx', 'Staten Island'}
     assert set(df_ubicaciones['neighbourhood_group'].unique()) == distritos_esperados
     assert df_ubicaciones['neighbourhood'].nunique() >= 200
+
+
+def test_datos_limpios_para_entrenamiento():
+    # El entrenamiento usa la salida del notebook de preparación, no el archivo original
+    ruta_limpio = 'data/Airbnb_NYC_2019_limpio.csv'
+    assert os.path.exists(ruta_limpio), 'Falta el dataset limpio de la preparación de datos'
+
+    df = pd.read_csv(ruta_limpio)
+    from features import COLUMNAS_ENTRADA
+    assert set(COLUMNAS_ENTRADA + ['price']).issubset(df.columns), 'El dataset limpio no tiene las columnas que usa el modelo'
+    assert not {'id', 'host_id', 'host_name', 'last_review'} & set(df.columns), 'El dataset limpio conserva columnas eliminadas'
+    assert (df['price'] > 0).all()
+    assert df['minimum_nights'].between(1, 365).all()
+    assert df.drop(columns='name').notna().all().all()
+    assert len(df) == 48870

@@ -12,13 +12,17 @@ Este proyecto intenta responder esa pregunta con datos. Entrenamos un modelo de 
 
 Ingresas los datos del alojamiento:
 
-- la ubicación, marcándola con un clic en el mapa (el distrito y el **micro-barrio** se detectan automáticamente),
-- el **título del anuncio**, que el modelo analiza para detectar señales de lujo, economía, espacio o cercanía al transporte,
+- la ubicación, marcándola con un clic en el mapa (el distrito, el **micro-barrio** y las distancias a 6 puntos de interés se calculan automáticamente),
+- el **título del anuncio**, elegido de una lista de 50 ejemplos o escrito a mano; la app resalta en vivo las palabras de lujo, espacio, transporte o economía que lee el modelo,
 - el tipo de alojamiento: casa o apartamento entero, habitación privada o habitación compartida,
 - las noches mínimas de estadía y los días disponibles al año,
 - el número de reseñas, las reseñas por mes y cuántos anuncios tiene el anfitrión.
 
-Al presionar **Estimar precio**, la app muestra un **precio sugerido** junto con un **rango razonable** y una explicación breve de los factores que más influyen en la estimación (tipo de alojamiento, distrito, atributos del título y cercanía a puntos de referencia).
+Al presionar **Estimar precio**, la app muestra:
+
+- el **precio sugerido** por noche y su **rango de referencia**,
+- la comparación con la **mediana de los anuncios del mismo micro-barrio y tipo**, con un histograma que marca dónde queda tu precio,
+- una sección **¿Qué pasaría si…?** que recalcula el precio con el mismo modelo cambiando una sola cosa: otro tipo de alojamiento, el título con o sin palabras de lujo, el mínimo de 30 noches que exige la Local Law 18 o el doble de reseñas.
 
 > **Aviso regulatorio (NYC):** desde septiembre de 2023, la *Local Law 18* restringe los alquileres completos de corta estancia (menos de 30 días) cuando el anfitrión no está presente. El dataset utilizado es de 2019, por lo que los precios son una referencia histórica y no incorporan esta normativa.
 
@@ -30,16 +34,17 @@ Seguimos la metodología **CRISP-DM**, que divide un proyecto de minería de dat
 
 1. **Entender el problema.** Definir qué queremos predecir (el precio por noche) y con qué datos contamos.
 2. **Entender y preparar los datos.**
-   - Eliminamos columnas que no aportan, como identificadores y nombres.
+   - Eliminamos columnas que no aportan: identificadores (`id`, `host_id`) y el nombre del anfitrión (`host_name`). Conservamos el título del anuncio (`name`) y el micro-barrio (`neighbourhood`) para transformarlos en la etapa siguiente.
    - Corregimos errores: precios de 0 dólares y estadías mínimas de más de un año.
    - Rellenamos con 0 las "reseñas por mes" vacías, que correspondían a anuncios sin reseñas.
+   - El resultado, `data/Airbnb_NYC_2019_limpio.csv` (48 870 registros), es el **único conjunto de datos con el que se hace la minería de características y se entrenan los modelos**.
 3. **Crear variables útiles (minería de características).**
    - La latitud y la longitud por separado casi no se relacionaban con el precio. Por eso construimos **distancias a 6 puntos de interés** (Times Square, Central Park, Financial District, Brooklyn Bridge, JFK y LaGuardia) y la distancia mínima a un aeropuerto.
    - Codificamos el **micro-barrio** (`neighbourhood`, 221 zonas) con **Target Encoding bayesiano out-of-fold**, evitando fuga de información.
    - Analizamos el **título del anuncio** con reglas semánticas: palabras de lujo, presupuesto, transporte y espacio, además de métricas estructurales del texto.
    - Añadimos **ratios de negocio** (disponibilidad anual, anfitrión multi-anuncio) y transformaciones logarítmicas en los conteos sesgados.
 4. **Probar varios modelos.** Comparamos 7 modelos con validación cruzada de 10 pliegues sobre el 70 % de entrenamiento: 4 de aprendizaje supervisado (Ridge, KNN, árbol de decisión y red neuronal) y 3 de ensamble (Random Forest, Gradient Boosting y XGBoost). Todos usan el mismo pipeline de `features.py`.
-5. **Elegir con estadística.** Medimos 8 medidas de calidad (MAE, MedAE, RMSE, MSE, MAPE, error máximo, R² log y R² en dólares). Como es un problema de regresión, el criterio de selección es **minimizar el error absoluto medio (MAE)**. Con ANOVA (F = 4.39, p = 0.0009) y la prueba de Tukey seleccionamos los 3 mejores: XGBoost, Random Forest y Gradient Boosting.
+5. **Elegir con estadística.** Medimos 8 medidas de calidad (MAE, MedAE, RMSE, MSE, MAPE, error máximo, R² log y R² en dólares). Como es un problema de regresión, el criterio de selección es **minimizar el error absoluto medio (MAE)**. Con ANOVA (F = 4.27, p = 0.0011) y la prueba de Tukey seleccionamos los 3 mejores: XGBoost, Random Forest y Gradient Boosting.
 6. **Ajustar hiperparámetros.** Optimizamos los 3 modelos con GridSearch y con optimización bayesiana (Optuna), minimizando el MAE. Ganó **XGBoost optimizado con Optuna** (MAE de validación cruzada: 54.9 USD).
 7. **Desplegar.** El ganador se guardó como *pipeline* completo (preparación + características + preprocesamiento + modelo) en `models/modelo_final_airbnb.pkl` y se publicó en Streamlit.
 
@@ -51,13 +56,13 @@ Lo evaluamos con un 30 % de los datos que el modelo nunca vio durante el entrena
 
 | Medida | Línea base ingenua (mediana) | Modelo base (9 variables) | Modelo final (34 características) |
 |---|---|---|---|
-| Error absoluto medio (MAE) | 85.16 USD | 56.92 USD | **55.91 USD** |
-| Error mediano (MedAE) | 47.00 USD | 22.97 USD | **22.91 USD** |
-| RMSE | 268.03 USD | 245.45 USD | **245.10 USD** |
+| Error absoluto medio (MAE) | 85.16 USD | 56.92 USD | **55.83 USD** |
+| Error mediano (MedAE) | 47.00 USD | 22.97 USD | **22.71 USD** |
+| RMSE | 268.03 USD | 245.45 USD | **245.02 USD** |
 | Error porcentual medio (MAPE) | 57.8 % | 31.0 % | **30.4 %** |
-| R² en escala logarítmica | — | 0.621 | **0.634** |
+| R² en escala logarítmica | — | 0.621 | **0.635** |
 
-En palabras simples: **para un alojamiento común, el modelo se equivoca en unos 23 dólares**, y el 75 % de sus estimaciones tiene un error menor de 50 dólares. Frente a cobrar siempre el precio mediano del mercado, reduce el error promedio un 34 %. Frente al modelo de 9 variables, la minería de características reduce el MAE un 1.8 % y el MAPE un 2.0 %: una mejora modesta pero en todas las medidas de error.
+En palabras simples: **para un alojamiento común, el modelo se equivoca en unos 23 dólares**, y el 75 % de sus estimaciones tiene un error menor de 50 dólares. Frente a cobrar siempre el precio mediano del mercado, reduce el error promedio un 34 %. Frente al modelo de 9 variables, la minería de características reduce el MAE un 1.9 % y el MAPE un 2.2 %: una mejora modesta pero en todas las medidas de error.
 
 Todas las cifras salen del notebook `Modelo_Airbnb_NYC.ipynb` y se guardan en `models/metricas_modelo.json`.
 
@@ -84,10 +89,12 @@ AIRBNB_streamlit/
 ├── features.py                # Transformaciones, minería y pipeline de producción
 ├── train_model.py             # Reentrena el modelo ganador y regenera el .pkl
 ├── requirements.txt           # Dependencias para producción y despliegue
+├── .streamlit/config.toml     # Tema visual de la app
 ├── data/
 │   ├── AB_NYC_2019.csv        # Dataset original de Airbnb NYC 2019
-│   ├── Airbnb_NYC_2019_limpio.csv # Dataset con reglas de calidad aplicadas
-│   └── ubicaciones_distritos.csv  # Coordenadas de referencia para inferir distrito y barrio
+│   ├── Airbnb_NYC_2019_limpio.csv # Salida de la preparación: entrada de la minería y del entrenamiento
+│   ├── ubicaciones_distritos.csv  # Coordenadas de referencia para inferir distrito y barrio
+│   └── titulos_ejemplo.csv    # 50 títulos de ejemplo para la app
 ├── models/
 │   ├── modelo_final_airbnb.pkl    # Pipeline final (preparación + características + XGBoost optimizado)
 │   ├── metricas_modelo.json       # Validación cruzada, ANOVA, ajuste, prueba y ganador
@@ -153,7 +160,7 @@ La aplicación se abrirá en tu navegador en `http://localhost:8501`.
 python train_model.py
 ```
 
-El script lee el modelo ganador y sus hiperparámetros de `models/metricas_modelo.json`, lo reentrena con el mismo 70 % de los datos, imprime sus métricas en el 30 % de prueba y reexporta `models/modelo_final_airbnb.pkl`. Sirve para regenerar el modelo con otras versiones de las librerías. La selección completa de modelos se reproduce ejecutando `notebooks/Modelo_Airbnb_NYC.ipynb` (unos 70 minutos con 2 CPU).
+El script lee el modelo ganador y sus hiperparámetros de `models/metricas_modelo.json`, lo reentrena con el mismo 70 % de los datos limpios (`data/Airbnb_NYC_2019_limpio.csv`), imprime sus métricas en el 30 % de prueba y reexporta `models/modelo_final_airbnb.pkl`. Sirve para regenerar el modelo con otras versiones de las librerías. La selección completa de modelos se reproduce ejecutando `notebooks/Modelo_Airbnb_NYC.ipynb` (unos 70 minutos con 2 CPU).
 
 ---
 
