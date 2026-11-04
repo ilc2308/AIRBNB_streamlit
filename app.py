@@ -151,9 +151,9 @@ c_a1, c_a2 = st.columns(2)
 with c_a1:
     nombre_anuncio = st.text_input('Título del anuncio', value='Cozy apartment near subway with great location', help='El modelo analiza palabras clave (lujo, transporte, espacio) para ajustar la estimación.')
     tipo = st.selectbox('Tipo de alojamiento', ['Entire home/apt', 'Private room', 'Shared room'])
-with c_a2:
     noches_minimas = st.number_input('Noches mínimas', min_value=1, max_value=365, value=2)
     disponibilidad = st.number_input('Días disponibles al año', min_value=0, max_value=365, value=120)
+with c_a2:
     num_resenas = st.number_input('Número de reseñas', min_value=0, value=10)
     resenas_mes = st.number_input('Reseñas por mes', min_value=0.0, value=0.5)
     num_anuncios = st.number_input('Número de anuncios del anfitrión', min_value=1, value=1)
