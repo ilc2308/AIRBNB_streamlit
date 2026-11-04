@@ -1,0 +1,4 @@
+*.ipynb linguist-documentation
+data/*.csv linguist-vendored
+models/*.pkl binary
+docs/*.pdf binary

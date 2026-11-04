@@ -222,3 +222,10 @@ __marimo__/
 # Scratch & Generated Mined Data
 scratch/
 data/*_minado.csv
+data/Airbnb_NYC_2019_limpio.csv
+
+# Artefactos de experimentos de modelo
+models/modelo_final_airbnb_*.pkl
+models/metricas_reentrenamiento.json
+models/metricas_huber.json
+models/metricas_quantile.json
