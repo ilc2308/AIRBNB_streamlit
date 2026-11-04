@@ -5,41 +5,61 @@ from streamlit.testing.v1 import AppTest
 RAIZ = Path(__file__).resolve().parents[1]
 
 
-def _boton_por_texto(app: AppTest, texto: str):
-    return next(boton for boton in app.button if texto in boton.label)
-
-
-def _input_por_texto(app: AppTest, texto: str):
-    return next(campo for campo in app.text_input if texto in campo.label)
+def _iniciar() -> AppTest:
+    app = AppTest.from_file(str(RAIZ / 'app.py'), default_timeout=120).run()
+    assert not app.exception, [e.value for e in app.exception]
+    return app
 
 
 def test_app_arranca_y_genera_estimacion():
-    app = AppTest.from_file(str(RAIZ / 'app.py'), default_timeout=120).run()
+    app = _iniciar()
+
+    app.radio(key='modo_titulo').set_value('Escribir el mío').run()
+    app.text_input(key='titulo').set_value('Luxury loft with terrace near subway').run()
+    app.segmented_control(key='tipo').set_value('Entire home/apt').run()
+    app.button(key='estimar').click().run()
+
     assert not app.exception, [e.value for e in app.exception]
+    resultado = app.session_state['ultima_estimacion']
+    bajo, alto = resultado['rango']
+    assert bajo < resultado['precio'] < alto
+    assert resultado['distrito'] == 'Manhattan'
+    etiquetas = [metrica.label for metrica in app.main.metric]
+    assert any('Mediana en' in etiqueta for etiqueta in etiquetas)
+    assert 'Error típico del modelo' in etiquetas
 
-    _input_por_texto(app, 'Título').set_value('Luxury loft with terrace near subway')
-    next(sel for sel in app.selectbox if 'Tipo de alojamiento' in sel.label).set_value('Entire home/apt')
 
-    _boton_por_texto(app, 'Estimar precio').click().run()
+def test_titulo_de_ejemplo_y_escenarios():
+    app = _iniciar()
+
+    app.selectbox(key='titulo_ejemplo').set_value('Luxury penthouse with skyline view and terrace').run()
+    app.segmented_control(key='tipo').set_value('Private room').run()
+    app.button(key='estimar').click().run()
 
     assert not app.exception, [e.value for e in app.exception]
-    etiquetas = [metrica.label for metrica in app.metric]
-    assert 'Precio sugerido (referencia)' in etiquetas
-    assert 'Rango razonable' in etiquetas
-    assert any('Error mediano' in etiqueta for etiqueta in etiquetas)
+    assert app.session_state['ultima_estimacion']['precio'] > 10
 
 
 def test_app_permite_coordenadas_manuales():
-    app = AppTest.from_file(str(RAIZ / 'app.py'), default_timeout=120).run()
-    assert not app.exception, [e.value for e in app.exception]
+    app = _iniciar()
 
-    latitud = next(campo for campo in app.number_input if campo.label == 'Latitud')
-    longitud = next(campo for campo in app.number_input if campo.label == 'Longitud')
-    latitud.set_value(40.7061)
-    longitud.set_value(-73.9969)
-    _boton_por_texto(app, 'Usar estas coordenadas').click().run()
+    app.number_input(key='lat_manual').set_value(40.7061)
+    app.number_input(key='lon_manual').set_value(-73.9969)
+    next(b for b in app.button if 'Usar estas coordenadas' in b.label).click().run()
 
     assert not app.exception, [e.value for e in app.exception]
-    valores = {metrica.label: metrica.value for metrica in app.metric}
-    assert valores['Latitud'] == '40.70610'
-    assert valores['Longitud'] == '-73.99690'
+    assert app.session_state['ubicacion'] == [40.7061, -73.9969]
+
+
+def test_app_permite_corregir_el_barrio():
+    app = _iniciar()
+
+    app.checkbox(key='ajuste_manual').check().run()
+    app.selectbox(key='distrito_manual').set_value('Brooklyn').run()
+    barrio = app.selectbox(key='barrio_manual')
+    barrio.set_value('Williamsburg').run()
+    app.button(key='estimar').click().run()
+
+    assert not app.exception, [e.value for e in app.exception]
+    resultado = app.session_state['ultima_estimacion']
+    assert (resultado['distrito'], resultado['barrio']) == ('Brooklyn', 'Williamsburg')

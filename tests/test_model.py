@@ -56,13 +56,16 @@ def test_archivo_ubicaciones():
 
 def test_datos_limpios_para_entrenamiento():
     # El entrenamiento usa la salida del notebook de preparación, no el archivo original
-    ruta_limpio = 'data/Airbnb_NYC_2019_limpio.csv'
-    assert os.path.exists(ruta_limpio), 'Falta el dataset limpio de la preparación de datos'
-
-    df = pd.read_csv(ruta_limpio)
     from features import COLUMNAS_ENTRADA
-    assert set(COLUMNAS_ENTRADA + ['price']).issubset(df.columns), 'El dataset limpio no tiene las columnas que usa el modelo'
-    assert not {'id', 'host_id', 'host_name', 'last_review'} & set(df.columns), 'El dataset limpio conserva columnas eliminadas'
+    from train_model import RUTA_DATOS, cargar_datos
+
+    ruta_limpio = RAIZ / 'data' / 'Airbnb_NYC_2019_limpio.csv'
+    assert ruta_limpio.exists(), 'Falta el dataset limpio de la preparación de datos'
+    assert ruta_limpio == RUTA_DATOS, 'train_model.py debe entrenar con el dataset limpio'
+
+    df = cargar_datos()
+    assert set(COLUMNAS_ENTRADA + ['price']).issubset(df.columns), 'Faltan columnas que usa el modelo'
+    assert not {'id', 'host_id', 'host_name', 'last_review'} & set(df.columns), 'Conserva columnas eliminadas'
     assert (df['price'] > 0).all()
     assert df['minimum_nights'].between(1, 365).all()
     assert df.drop(columns='name').notna().all().all()
