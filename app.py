@@ -101,7 +101,7 @@ ubicaciones = cargar_ubicaciones()
 metricas_modelo = cargar_metricas()
 
 # ---------------- Ubicación: se elige con un clic en el mapa
-st.header('1) Ubicación')
+st.header('Ubicación')
 st.write('Haz clic en el mapa para marcar dónde está el alojamiento. El modelo utiliza el **micro-barrio** y las **distancias a POIs** para refinar la predicción.')
 
 # Ubicación inicial: Times Square
@@ -146,7 +146,7 @@ except Exception:
     st.info(f'**Neighbourhood Group:** {distrito} | **Neighbourhood (micro-barrio):** {barrio}')
 
 # ---------------- Anuncio y alojamiento
-st.header('2) Anuncio, alojamiento y anfitrión')
+st.header('Anuncio, alojamiento y anfitrión')
 c_a1, c_a2 = st.columns(2)
 with c_a1:
     nombre_anuncio = st.text_input('Título del anuncio', value='Cozy apartment near subway with great location', help='El modelo analiza palabras clave (lujo, transporte, espacio) para ajustar la estimación.')
@@ -161,7 +161,7 @@ with c_a2:
 st.caption('⚠️ **Aviso regulatorio (NYC):** Desde septiembre de 2023, la *Local Law 18* de Nueva York restringe los alquileres completos de corta estancia (< 30 días) sin que el anfitrión esté presente. El dataset utilizado es de 2019, por lo que los precios pueden no reflejar la normativa actual.')
 
 # ---------------- Predicción
-st.header('3) Estimación')
+st.header('Estimación')
 if st.button('Estimar precio', type='primary', disabled=fuera_de_nyc):
     datos = pd.DataFrame({
         'name': [nombre_anuncio],
